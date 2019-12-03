@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Invoice", "Invoice\Invoice.csproj", "{FC9BAEE6-BCBF-4F2C-AAF1-D2FF8D21366C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvoiceTest", "InvoiceTest\InvoiceTest.csproj", "{313ED787-10CF-423E-A238-2582994BDC4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{FC9BAEE6-BCBF-4F2C-AAF1-D2FF8D21366C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC9BAEE6-BCBF-4F2C-AAF1-D2FF8D21366C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC9BAEE6-BCBF-4F2C-AAF1-D2FF8D21366C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{313ED787-10CF-423E-A238-2582994BDC4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{313ED787-10CF-423E-A238-2582994BDC4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{313ED787-10CF-423E-A238-2582994BDC4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{313ED787-10CF-423E-A238-2582994BDC4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
