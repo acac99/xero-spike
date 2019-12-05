@@ -11,24 +11,28 @@ using AutoFixture;
 using Invoice;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace InvoiceTest.Controllers
 {
-    public class InvoiceControllerTest
+    public class InvoiceControllerTest : IDisposable
     {
+        private HttpClient _client;
+        private DataContext _dataContext;
+        public InvoiceControllerTest()
+        {
+            var builder = new WebHostBuilder().UseStartup<Startup>();
+            var server = new TestServer(builder);
+            _client = server.CreateClient();
+;           _dataContext = (DataContext)server.Services.GetService(typeof(DataContext));
+        }
         [Fact]
         public async Task ShouldExpect200OnGet()
         {
-            // setup
-            var builder = new WebHostBuilder().UseStartup<Startup>();
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
 
             // when
-            var response = await client.GetAsync("api/invoice");
+            var response = await _client.GetAsync("api/invoice");
 
             // then
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -37,11 +41,6 @@ namespace InvoiceTest.Controllers
         [Fact]
         public async Task ShouldGetListOfInvoices()
         {
-          
-            var builder = new WebHostBuilder().UseStartup<Startup>();
-            var server = new TestServer(builder);
-            var dataContext = (DataContext)server.Services.GetService(typeof(DataContext));
-            
             var fixture = new Fixture();
             
             fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList().ForEach(b => fixture.Behaviors.Remove(b));
@@ -49,27 +48,43 @@ namespace InvoiceTest.Controllers
 
             var invoices = fixture.CreateMany<Invoice.Models.Invoice>(2).ToList();
             
-            invoices.ForEach(x => dataContext.Invoices.Add(x));
-            dataContext.SaveChanges();
-            
-            // setup
-            var client = server.CreateClient();
+            invoices.ForEach(x => _dataContext.Invoices.Add(x));
+            _dataContext.SaveChanges();
             
             // when
-            var response = await client.GetAsync("api/invoice");
+            var response = await _client.GetAsync("api/invoice");
             
             var listOfInvoice = JsonConvert.DeserializeObject<List<Invoice.Models.Invoice>>(response.Content.ReadAsStringAsync().Result);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(2, listOfInvoice.Count);
         }
+        
+        [Fact]
+        public async Task ShouldAnInvoiceByItsId()
+        {
+
+            var fixture = new Fixture();
+            
+            fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList().ForEach(b => fixture.Behaviors.Remove(b));
+            fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            
+            var invoice = fixture.Create<Invoice.Models.Invoice>();
+
+            _dataContext.Invoices.Add(invoice);
+            _dataContext.SaveChanges();
+            
+            // when
+            var response = await _client.GetAsync($"api/invoice/{invoice.Id}");
+            
+            var invoiceResponse = JsonConvert.DeserializeObject<Invoice.Models.Invoice>(response.Content.ReadAsStringAsync().Result);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(invoice.Id, invoiceResponse.Id);
+        }
 
         [Fact]
         public async Task ShouldCreateAnInvoice()
         {
-            // setup
-            var builder = new WebHostBuilder().UseStartup<Startup>();
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
 
             // when
             var payload = new
@@ -77,7 +92,7 @@ namespace InvoiceTest.Controllers
                 InvoiceNumber = "123",
                 AmountPaid = "123.43",
                 Total = "123",
-                Hello = new List<Object>
+                LineItems = new List<Object>
                 {
                     new
                     {
@@ -90,9 +105,9 @@ namespace InvoiceTest.Controllers
                 }
             };
 
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var response =
-                await client.PostAsync("api/invoice",
+                await _client.PostAsync("api/invoice",
                     new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
 
             // then
@@ -101,6 +116,11 @@ namespace InvoiceTest.Controllers
             
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(payload.AmountPaid, model.AmountPaid.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public void Dispose()
+        {
+            _dataContext.Database.EnsureDeleted();
         }
     }
 }

@@ -10,7 +10,6 @@ namespace Invoice.Controllers
     [Route("api/[controller]")]
     public class InvoiceController : Controller
     {
-
         private readonly IHttpClientFactory _httpClientFactory;
 
         private readonly DataContext _dataContext;
@@ -27,6 +26,21 @@ namespace Invoice.Controllers
             var invoices = _dataContext.Invoices.Include(x => x.LineItems).ToList();
             return Ok(invoices);
         }
+
+
+        [HttpGet("{id}")]
+        public IActionResult Invoice(Guid id)
+        {
+            var invoice = _dataContext.Invoices.Where(x => x.Id == id).Include(x => x.LineItems)
+                .FirstOrDefault();
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(invoice);
+        }
+
 
         [HttpPost]
         public IActionResult SaveInvoice([FromBody] Models.Invoice invoice)
