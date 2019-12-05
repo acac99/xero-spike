@@ -1,37 +1,31 @@
-using System;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
 namespace Invoice.Controllers
 {
+    using System;
+    using System.Linq;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+
     [Route("api/[controller]")]
     public class InvoiceController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly DataContext dataContext;
 
-        private readonly DataContext _dataContext;
-
-        public InvoiceController(IHttpClientFactory httpClientFactory, DataContext dataContext)
+        public InvoiceController(DataContext dataContext)
         {
-            _httpClientFactory = httpClientFactory;
-            _dataContext = dataContext;
+            this.dataContext = dataContext;
         }
 
         [HttpGet]
         public IActionResult Invoices()
         {
-            var invoices = _dataContext.Invoices.Include(x => x.LineItems).ToList();
+            var invoices = dataContext.Invoices.Include(x => x.LineItems).ToList();
             return Ok(invoices);
         }
-
 
         [HttpGet("{id}")]
         public IActionResult Invoice(Guid id)
         {
-            var invoice = _dataContext.Invoices.Where(x => x.Id == id).Include(x => x.LineItems)
+            var invoice = dataContext.Invoices.Where(x => x.Id == id).Include(x => x.LineItems)
                 .FirstOrDefault();
             if (invoice == null)
             {
@@ -41,13 +35,12 @@ namespace Invoice.Controllers
             return Ok(invoice);
         }
 
-
         [HttpPost]
         public IActionResult SaveInvoice([FromBody] Models.Invoice invoice)
         {
-            _dataContext.Invoices.Add(invoice);
-            invoice.LineItems.ForEach(x => _dataContext.LineItems.Add(x));
-            _dataContext.SaveChanges();
+            dataContext.Invoices.Add(invoice);
+            invoice.LineItems.ForEach(x => dataContext.LineItems.Add(x));
+            dataContext.SaveChanges();
             return Ok(invoice);
         }
     }
