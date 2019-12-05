@@ -5,7 +5,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.0" />
       <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.0" />
       <PackageReference Include="Xero.NetStandard.OAuth2" Version="0.0.2-beta" />
       <PackageReference Include="Xero.NetStandard.OAuth2Client" Version="0.0.1-beta" />
     </ItemGroup>
